@@ -1,4 +1,4 @@
--- // BLOX Gank Server Monitor //
+-- // Kaybe Mancing Server Monitor //
 -- Discord @bloxgank
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -16,6 +16,34 @@ local DISCORD_ROLE_ID = ""
 local WEBHOOK_AVATAR = ""
 local PROXY = "https://square-haze-a007.remediashop.workers.dev"
 local SCRIPT_ACTIVE = false
+
+-- // SETTINGS SAVE KEY //
+local SETTINGS_KEY = "KaybeMancingSettings"
+
+-- // SAVE SETTINGS //
+local function SaveSettings(joinUrl, fishUrl, statsUrl, roleId)
+    local ok, err = pcall(function()
+        local data = {
+            join  = joinUrl  or "",
+            fish  = fishUrl  or "",
+            stats = statsUrl or "",
+            role  = roleId   or "",
+        }
+        writefile(SETTINGS_KEY .. ".json", HttpService:JSONEncode(data))
+    end)
+    return ok
+end
+
+-- // LOAD SETTINGS //
+local function LoadSettings()
+    local ok, result = pcall(function()
+        if not isfile(SETTINGS_KEY .. ".json") then return nil end
+        local raw = readfile(SETTINGS_KEY .. ".json")
+        return HttpService:JSONDecode(raw)
+    end)
+    if ok and result then return result end
+    return nil
+end
 
 -- // LEADERBOARD CONFIG //
 local LEADERBOARD_INTERVAL = 1800 -- tiap 30 menit (detik)
@@ -220,7 +248,7 @@ local function SendStatsWebhook(title, description, color, fields, imageUrl, thu
     for _, f in ipairs(fields) do table.insert(finalFields, f) end
     local embed = {
         ["title"] = title, ["description"] = description, ["color"] = color, ["fields"] = finalFields,
-        ["footer"] = {["text"] = "BLOX Gank Stats | " .. os.date("%X")},
+        ["footer"] = {["text"] = "Kaybe Mancing Stats | " .. os.date("%X")},
         ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
     if imageUrl then embed["image"] = {["url"] = imageUrl} end
@@ -245,7 +273,7 @@ local function SendFishWebhook(title, description, color, fields, imageUrl, thum
     end
     local embed = {
         ["title"] = title, ["description"] = description, ["color"] = color, ["fields"] = finalFields,
-        ["footer"] = {["text"] = "BLOX Gank Webhook | " .. os.date("%X")},
+        ["footer"] = {["text"] = "Kaybe Mancing Webhook | " .. os.date("%X")},
         ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
     if imageUrl then embed["image"] = {["url"] = imageUrl} end
@@ -268,7 +296,7 @@ local function SendWebhook(title, description, color, fields, imageUrl, thumbUrl
     end
     local embed = {
         ["title"] = title, ["description"] = description, ["color"] = color, ["fields"] = finalFields,
-        ["footer"] = {["text"] = "BLOX Gank Webhook | " .. os.date("%X")},
+        ["footer"] = {["text"] = "Kaybe Mancing Webhook | " .. os.date("%X")},
         ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
     if imageUrl then embed["image"] = {["url"] = imageUrl} end
@@ -278,7 +306,7 @@ local function SendWebhook(title, description, color, fields, imageUrl, thumbUrl
             requestFunc({
                 Url = WEBHOOK_URL, Method = "POST",
                 Headers = {["Content-Type"] = "application/json"},
-                Body = HttpService:JSONEncode({["username"] = "BLOX Gank", ["avatar_url"] = WEBHOOK_AVATAR, ["embeds"] = {embed}})
+                Body = HttpService:JSONEncode({["username"] = "Kaybe Mancing", ["avatar_url"] = WEBHOOK_AVATAR, ["embeds"] = {embed}})
             })
         end)
     end)
@@ -585,7 +613,7 @@ local function WatchForFish(player)
     end)
 end
 
--- // HOOK CHAT SERVER (hanya server message, tanpa chat log pemain) //
+-- // HOOK CHAT SERVER //
 local function HookChat()
     if TextChatService then
         TextChatService.MessageReceived:Connect(function(msg)
@@ -593,7 +621,6 @@ local function HookChat()
             if msg.TextSource == nil then
                 CheckAndSend(text)
             end
-            -- Chat pemain diabaikan (tidak ada SendChatLog)
         end)
     end
     local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
@@ -608,7 +635,6 @@ local function HookChat()
                     if isServerMsg then
                         CheckAndSend(d.Message)
                     end
-                    -- Chat pemain diabaikan (tidak ada SendChatLog)
                 end
             end)
         end
@@ -732,13 +758,13 @@ end
 -- // UI //
 local function CreateUI()
     local gui = Instance.new("ScreenGui")
-    gui.Name = "BloxGankUI"
+    gui.Name = "KaybeMancingUI"
     gui.ResetOnSpawn = false
     gui.Parent = (gethui and gethui()) or CoreGui
 
     local frame = Instance.new("Frame")
     frame.Name = "Main"
-    frame.Size = UDim2.new(0, 300, 0, 310)
+    frame.Size = UDim2.new(0, 300, 0, 355)
     frame.Position = UDim2.new(0.5, -150, 0.5, -90)
     frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     frame.BorderSizePixel = 0
@@ -759,7 +785,7 @@ local function CreateUI()
     topBarFix.Parent = topBar
 
     local title = Instance.new("TextLabel")
-    title.Text = "🎣 BLOX Gank Monitor"
+    title.Text = "🎣 Kaybe Mancing Monitor"
     title.Size = UDim2.new(1, -80, 1, 0)
     title.Position = UDim2.new(0, 10, 0, 0)
     title.BackgroundTransparency = 1
@@ -794,7 +820,7 @@ local function CreateUI()
     Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 4)
 
     local isMinimized = false
-    local fullSize = UDim2.new(0, 300, 0, 310)
+    local fullSize = UDim2.new(0, 300, 0, 355)
     local miniSize = UDim2.new(0, 300, 0, 36)
     minBtn.MouseButton1Click:Connect(function()
         isMinimized = not isMinimized
@@ -896,10 +922,85 @@ local function CreateUI()
     makeLabel("🔔 Discord Role ID (opsional)", 210)
     local inputRole = makeInput("Masukkan Role ID...", 224)
 
+    -- // TOMBOL SAVE & LOAD SETTINGS //
+    local saveBtn = Instance.new("TextButton")
+    saveBtn.Text = "💾 SAVE SETTINGS"
+    saveBtn.Size = UDim2.new(0.5, -16, 0, 26)
+    saveBtn.Position = UDim2.new(0, 12, 0, 260)
+    saveBtn.BackgroundColor3 = Color3.fromRGB(40, 100, 180)
+    saveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    saveBtn.Font = Enum.Font.GothamBold
+    saveBtn.TextSize = 10
+    saveBtn.BorderSizePixel = 0
+    saveBtn.Parent = frame
+    Instance.new("UICorner", saveBtn).CornerRadius = UDim.new(0, 6)
+
+    local loadBtn = Instance.new("TextButton")
+    loadBtn.Text = "📂 LOAD SETTINGS"
+    loadBtn.Size = UDim2.new(0.5, -16, 0, 26)
+    loadBtn.Position = UDim2.new(0.5, 4, 0, 260)
+    loadBtn.BackgroundColor3 = Color3.fromRGB(70, 60, 130)
+    loadBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    loadBtn.Font = Enum.Font.GothamBold
+    loadBtn.TextSize = 10
+    loadBtn.BorderSizePixel = 0
+    loadBtn.Parent = frame
+    Instance.new("UICorner", loadBtn).CornerRadius = UDim.new(0, 6)
+
+    -- Notif label kecil di bawah tombol save/load
+    local notifLabel = Instance.new("TextLabel")
+    notifLabel.Text = ""
+    notifLabel.Size = UDim2.new(1, -24, 0, 14)
+    notifLabel.Position = UDim2.new(0, 12, 0, 290)
+    notifLabel.BackgroundTransparency = 1
+    notifLabel.TextColor3 = Color3.fromRGB(100, 220, 130)
+    notifLabel.Font = Enum.Font.Gotham
+    notifLabel.TextSize = 10
+    notifLabel.TextXAlignment = Enum.TextXAlignment.Center
+    notifLabel.Parent = frame
+
+    local function showNotif(msg, color)
+        notifLabel.Text = msg
+        notifLabel.TextColor3 = color or Color3.fromRGB(100, 220, 130)
+        task.delay(2.5, function() notifLabel.Text = "" end)
+    end
+
+    saveBtn.MouseButton1Click:Connect(function()
+        local ok = SaveSettings(inputJoin.Text, inputFish.Text, inputStats.Text, inputRole.Text)
+        if ok then
+            showNotif("✅ Settings berhasil disimpan!", Color3.fromRGB(80, 220, 110))
+        else
+            showNotif("❌ Gagal menyimpan settings.", Color3.fromRGB(220, 80, 80))
+        end
+    end)
+
+    loadBtn.MouseButton1Click:Connect(function()
+        if SCRIPT_ACTIVE then
+            showNotif("⚠️ Tidak bisa load saat aktif.", Color3.fromRGB(220, 180, 60))
+            return
+        end
+        local data = LoadSettings()
+        if data then
+            inputJoin.Text  = data.join  or ""
+            inputFish.Text  = data.fish  or ""
+            inputStats.Text = data.stats or ""
+            inputRole.Text  = data.role  or ""
+            showNotif("📂 Settings berhasil dimuat!", Color3.fromRGB(100, 180, 255))
+        else
+            showNotif("❌ Tidak ada settings tersimpan.", Color3.fromRGB(220, 80, 80))
+        end
+    end)
+
+    saveBtn.MouseEnter:Connect(function() TweenService:Create(saveBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(60, 120, 210)}):Play() end)
+    saveBtn.MouseLeave:Connect(function() TweenService:Create(saveBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 100, 180)}):Play() end)
+    loadBtn.MouseEnter:Connect(function() TweenService:Create(loadBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(90, 80, 160)}):Play() end)
+    loadBtn.MouseLeave:Connect(function() TweenService:Create(loadBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(70, 60, 130)}):Play() end)
+
+    -- // START BUTTON //
     local startBtn = Instance.new("TextButton")
     startBtn.Text = "START MONITORING"
     startBtn.Size = UDim2.new(1, -24, 0, 34)
-    startBtn.Position = UDim2.new(0, 12, 0, 262)
+    startBtn.Position = UDim2.new(0, 12, 0, 308)
     startBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
     startBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     startBtn.Font = Enum.Font.GothamBold
@@ -941,6 +1042,8 @@ local function CreateUI()
         inputFish.TextEditable = false
         inputStats.TextEditable = false
         inputRole.TextEditable = false
+        saveBtn.Visible = false
+        loadBtn.Visible = false
         StartMonitoring()
     end)
 
@@ -949,6 +1052,19 @@ local function CreateUI()
     end)
     startBtn.MouseLeave:Connect(function()
         if not SCRIPT_ACTIVE then TweenService:Create(startBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0, 180, 100)}):Play() end
+    end)
+
+    -- // AUTO LOAD SETTINGS SAAT BUKA //
+    task.spawn(function()
+        task.wait(0.3)
+        local data = LoadSettings()
+        if data then
+            inputJoin.Text  = data.join  or ""
+            inputFish.Text  = data.fish  or ""
+            inputStats.Text = data.stats or ""
+            inputRole.Text  = data.role  or ""
+            showNotif("📂 Settings terakhir dimuat otomatis!", Color3.fromRGB(100, 180, 255))
+        end
     end)
 end
 
