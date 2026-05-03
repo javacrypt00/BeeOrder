@@ -81,7 +81,7 @@ local SecretFishList = {
     "Pirate Megalodon", "Viridis Lurker", "Cursed Kraken", "Ancient Magma Whale",
     "Rainbow Comet Shark", "Love Nessie", "Broken Heart Nessie",
     "Mutant Runic Koi", "Ketupat Whale", "Cosmic Mutant Shark", "Strawberry Orca",
-    "Bonemaw Tyrant", "Deepsea Monster Axolotl", "Blocky Lochness Monster",
+    "Bonemaw Tyrant", "Deepsea Monster Axolotl", "Blocky Lochness Monster", "Aurelion",
     -- Forgotten Tier
     "Sea Eater", "Thunderzilla", "Iridesca", "Frostbite Leviathan",
 }
@@ -93,7 +93,7 @@ local ForgottenList = {
 
 -- // DATABASE MUTASI SPESIAL //
 local MutasiList = {
-    "Noob", "Fairy Dust", "Holographic", "Gemstone", "Fire", "Color Burn", "Galaxy", "Midnight", "BloodMoon", "Frozen", "Lightning",
+    "Noob", "Fairy Dust", "Holographic", "Gemstone", "Fire", "Color Burn", "Galaxy", "Midnight", "BloodMoon", "Frozen", "Lightning", "Disco",
 }
 
 -- // DATABASE CHANCE IKAN SECRET //
@@ -157,6 +157,7 @@ local FishChanceData = {
     ["Deepsea Monster Axolotl"] = "1 in 2M",
     ["Blocky Lochness Monster"] = "1 in 3M",
     ["Frostbite Leviathan"] = "1 in 12M",
+    ["Aurelion"] = "1 in 3M",
 }
 
 -- // DATABASE RUBY GEMSTONE //
@@ -216,6 +217,7 @@ local FishImageURL = {
     ["Deepsea Monster Axolotl"] = "https://raw.githubusercontent.com/revkatomy-max/asset-id/main/Deepsea%20Monster%20Axolotl.jpeg",
     ["Blocky Lochness Monster"] = "https://raw.githubusercontent.com/revkatomy-max/asset-id/main/Blocky%20Lochness%20Monster.jpeg",
     ["Frostbite Leviathan"] = "https://raw.githubusercontent.com/revkatomy-max/asset-id/main/Frostbite%20Leviathan.jpeg",
+    ["Aurelion"] = "https://raw.githubusercontent.com/revkatomy-max/asset-id/main/Aurelion.png",
 }
 
 -- // CACHE TAMBAHAN DARI BACKPACK MONITOR //
